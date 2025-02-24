@@ -3,6 +3,6 @@ Requires python3, cmake, wget to be installed. Running cmake will download all d
 
 # Commands
 ```cmake -B build```
-- Creates a directory called 'build'
+- Creates a directory called 'build', downloads the dataset, and sets up the python virtual environment
 ```cmake --build build --target run```
-- Uses the 'build' folder scripts to run the python code in the project
+- Uses the 'build' folder scripts to run the python code in the project using the virtual environment
