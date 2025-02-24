@@ -149,5 +149,6 @@ endif()
 
 add_custom_target(run
     COMMAND ${APP_VENV}/bin/python ${CMAKE_SOURCE_DIR}/main.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS ${APP_VENV}
 )
