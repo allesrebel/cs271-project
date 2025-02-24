@@ -74,24 +74,10 @@ if(WGET_EXECUTABLE)
     # List of individual dataset files to download.
     set(DATASETS
         "att48.tsp"
-        "att48_d.txt"
-        "att48_xy.txt"
-        "att48_s.txt"
         "dantzig42.tsp"
-        "dantzig42_d.txt"
-        "five_d.txt"
-        "five_s.txt"
         "fri26.tsp"
-        "fri26_d.txt"
-        "fri26_s.txt"
         "gr17.tsp"
-        "gr17_d.txt"
-        "gr17_s.txt"
         "p01.tsp"
-        "p01_d.txt"
-        "p01_s.txt"
-        "p01_sxy.txt"
-        "p01_xy.txt"
     )
 
     # Loop over each dataset file, download it into the dataset folder if it doesn't already exist.
