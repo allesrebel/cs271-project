@@ -16,16 +16,24 @@ tsp_optimal = {
 tsp_data = {}
 
 for file in files:
-    tsp_data[file] = tsplib95.load('dataset/'+file)
+    file_path = 'dataset/' + file
+    with open(file_path, 'r') as f:
+        file_content = f.read()
+    # Add an extra newline to the end of the file content
+    # for compatibility with the TSPLIB parser (specifically p01.tsp)
+    file_content += "\n"
+    # Parse the file content into a TSPLIB graph
+    tsp_data[file] = tsplib95.parse(file_content)
 
-solvers = [GeneticAlgorithmSolver, HeuristicSolver, SimulatedAnnealingSolver]
+solvers = [HeuristicSolver] #, GeneticAlgorithmSolver, SimulatedAnnealingSolver]
 
 results = {}
 
-for solver in solvers:
+for solver_cls in solvers:
     for file, graph in tsp_data.items():
+        solver_instance = solver_cls()
         start_time = time.time()
-        solution = solver.solve(graph)
+        solution = solver_instance.solve(graph)
         end_time = time.time()
         elapsed_time = end_time - start_time
         results[file] = {
