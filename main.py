@@ -1,13 +1,14 @@
 import tsplib95
 import time
+import math
 
 from src.GeneticAlgorithmSolver import GeneticAlgorithmSolver
 from src.HeuristicSolver import HeuristicSolver
 from src.SimulatedAnnealingSolver import SimulatedAnnealingSolver
 
-files = ["att48.tsp", "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
+files = ["att48.tsp"]#, "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
 tsp_optimal = {
-    "att48.tsp": 33523,
+    "att48.tsp": 10628,
     "dantzig42.tsp": 699,
     "fri26.tsp": 937,
     "gr17.tsp": 2085,
@@ -41,5 +42,8 @@ for solver_cls in solvers:
             "time": elapsed_time,
             "optimal": tsp_optimal[file]
         }
+
+#print(list( tsp_data["att48.tsp"].get_nodes()))
+
 
 print(results)

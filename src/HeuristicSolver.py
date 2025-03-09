@@ -1,3 +1,6 @@
+import random
+
+
 class HeuristicSolver:
     """
     A heuristic solver for the Traveling Salesman Problem using the Nearest Neighbor heuristic.
@@ -21,29 +24,25 @@ class HeuristicSolver:
                         starting and ending at the same node.
               - "cost": The total cost (distance) of the computed tour.
         """
-        # Obtain a list of nodes from the graph
-        nodes = list(graph.get_nodes())
-        if not nodes:
-            return {"tour": [], "cost": 0}
 
-        # Start at an arbitrary node (here, the first node in the list)
-        start = nodes[0]
-        tour = [start]
-        unvisited = set(nodes)
-        unvisited.remove(start)
-        current = start
+        # a list of nodes we've got to process
+        unvisited = set( graph.node_coords.keys() )
+
+        distance = 0
+        current = random.choice(tuple(unvisited))
+        tour = [current]
+        unvisited.remove(current)
 
         # Iteratively visit the nearest unvisited neighbor
         while unvisited:
             next_node = min(unvisited, key=lambda node: graph.get_weight(current, node))
+            distance += graph.get_weight(current, next_node)
             tour.append(next_node)
             unvisited.remove(next_node)
             current = next_node
 
         # Complete the tour by returning to the starting node
-        tour.append(start)
+        tour.append(tour[0])
+        distance += graph.get_weight(current, tour[0])
 
-        # Compute the total cost of the tour
-        total_cost = sum(graph.get_weight(tour[i], tour[i + 1]) for i in range(len(tour) - 1))
-
-        return {"tour": tour, "cost": total_cost}
+        return {"tour": tour, "cost": distance}
