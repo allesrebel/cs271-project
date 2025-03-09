@@ -6,6 +6,9 @@ class HeuristicSolver:
     A heuristic solver for the Traveling Salesman Problem using the Nearest Neighbor heuristic.
     """
 
+    def set_meta_config():
+        pass
+
     def __init__(self):
         pass
 
@@ -45,4 +48,4 @@ class HeuristicSolver:
         tour.append(tour[0])
         distance += graph.get_weight(current, tour[0])
 
-        return {"tour": tour, "cost": distance}
+        return {"tour": tour, "cost": distance, "meta": vars(self)}

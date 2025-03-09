@@ -7,11 +7,17 @@ class SimulatedAnnealingSolver:
     The endpoints (first and last node) are fixed to make it work!
     """
 
+    def set_meta_config( self, initial_temperature, cooling_rate, iterations_per_temp, temperature_threshold ):
+        self.initial_temperature = initial_temperature
+        self.cooling_rate = cooling_rate
+        self.iterations_per_temp = iterations_per_temp
+        self.temperature_threshold = temperature_threshold
+
     def __init__(self):
         # Randomly generate meta parameters for simulated annealing.
         self.initial_temperature = random.uniform(1000, 5000)   # e.g., between 1000 and 5000
         self.cooling_rate = random.uniform(0.95, 0.99)          # e.g., cooling rate between 0.95 and 0.99
-        self.iterations_per_temp = random.randint(100, 500)       # iterations per temperature level
+        self.iterations_per_temp = random.randint(100, 500)     # iterations per temperature level
         self.temperature_threshold = 1e-3                       # stopping condition for temperature
 
     def solve(self, graph):
@@ -75,4 +81,4 @@ class SimulatedAnnealingSolver:
             # Cool down the temperature.
             T *= self.cooling_rate
 
-        return {"tour": best_solution, "cost": best_cost}
+        return {"tour": best_solution, "cost": best_cost, "meta": vars(self) }

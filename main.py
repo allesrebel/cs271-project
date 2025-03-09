@@ -2,6 +2,8 @@ import collections
 import tsplib95
 import time
 import math
+import multiprocessing
+import os
 
 def verify_solution(graph, solution):
     """
@@ -26,21 +28,15 @@ def verify_solution(graph, solution):
     if not tour:
         return False, "Tour is empty."
 
-    # Check that the start and end are the same.
     if tour[0] != tour[-1]:
         return False, "Tour does not start and end at the same node."
 
-    # Get the list of nodes in the graph.
     nodes = list(graph.get_nodes())
-
-    # Exclude the fixed endpoints to check the interior.
     interior = tour[1:-1]
 
-    # Ensure each interior node is unique.
     if len(interior) != len(set(interior)):
         return False, "Some nodes are visited more than once in the interior of the tour."
 
-    # In a valid TSP tour, the interior nodes should be exactly the graph's nodes minus the starting node.
     expected_interior = set(nodes)
     try:
         expected_interior.remove(tour[0])
@@ -50,10 +46,8 @@ def verify_solution(graph, solution):
     if set(interior) != expected_interior:
         return False, "Interior nodes do not match the expected set of nodes."
 
-    # Compute the cost of the tour.
     computed_cost = sum(graph.get_weight(tour[i], tour[i+1]) for i in range(len(tour) - 1))
 
-    # Allow for a small floating-point tolerance.
     if abs(computed_cost - reported_cost) > 1e-6:
         return False, f"Computed cost ({computed_cost}) does not match reported cost ({reported_cost})."
 
@@ -64,6 +58,7 @@ from src.GeneticAlgorithmSolver import GeneticAlgorithmSolver
 from src.HeuristicSolver import HeuristicSolver
 from src.SimulatedAnnealingSolver import SimulatedAnnealingSolver
 
+# List of TSPLIB instance files and their known optimal costs.
 files = ["att48.tsp", "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
 tsp_optimal = {
     "att48.tsp": 10628,
@@ -72,45 +67,51 @@ tsp_optimal = {
     "gr17.tsp": 2085,
     "p01.tsp": 291
 }
-tsp_data = {}
-
-for file in files:
-    file_path = 'dataset/' + file
-    with open(file_path, 'r') as f:
-        file_content = f.read()
-    # Add an extra newline to the end of the file content
-    # for compatibility with the TSPLIB parser (specifically p01.tsp)
-    file_content += "\n"
-    # Parse the file content into a TSPLIB graph
-    tsp_data[file] = tsplib95.parse(file_content)
 
 solvers = [HeuristicSolver, GeneticAlgorithmSolver, SimulatedAnnealingSolver]
 
-results = collections.defaultdict(list)
-
+# Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
+tasks = []
 for solver_cls in solvers:
-    for file, graph in tsp_data.items():
-        solver_instance = solver_cls()
+    for file in files:
+        tasks.append((solver_cls, file, tsp_optimal[file]))
 
-        if solver_cls == GeneticAlgorithmSolver:
-            solver_instance.set_meta_config(2,0.5,0.5,0.5,10)
+def run_solver_task(args):
+    solver_cls, file, optimal_value = args
+    file_path = os.path.join('dataset', file)
+    
+    # Read and parse the file content inside the worker.
+    with open(file_path, 'r') as f:
+        file_content = f.read()
+    # Add an extra newline for TSPLIB compatibility (especially for p01.tsp)
+    file_content += "\n"
+    graph = tsplib95.parse(file_content)
+    
+    solver_instance = solver_cls()
+    start_time = time.time()
+    solution = solver_instance.solve(graph)
+    elapsed_time = time.time() - start_time
 
-        start_time = time.time()
-        solution = solver_instance.solve(graph)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        
-        # validate the solution
-        valid, message = verify_solution(graph, solution)
-        if not valid:
-            print(f"Verification failed for {solver_cls.__qualname__} on {file}: {message}")
-            exit(2)
+    valid, message = verify_solution(graph, solution)
+    if not valid:
+        print(f"Verification failed for {solver_cls.__qualname__} on {file}: {message}")
 
+    return file, solver_cls.__qualname__, solution, elapsed_time, optimal_value
+
+if __name__ == "__main__":
+    # Spawn only as many processes as there are CPU cores.
+    num_processors = multiprocessing.cpu_count()
+    with multiprocessing.Pool(processes=num_processors) as pool:
+        results_list = pool.map(run_solver_task, tasks)
+
+    # Aggregate results in a thread-safe manner in the main process.
+    results = collections.defaultdict(list)
+    for file, solver_name, solution, elapsed_time, optimal in results_list:
         results[file].append({
-            "solver" : solver_cls.__qualname__,
+            "solver": solver_name,
             "solution": solution,
             "time": elapsed_time,
-            "optimal": tsp_optimal[file]
+            "optimal": optimal
         })
 
-print(results)
+    print(results)

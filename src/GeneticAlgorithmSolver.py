@@ -137,7 +137,6 @@ class GeneticAlgorithmSolver:
             best_individual = population[0]
             best_cost = compute_cost( best_individual )
        
-        final_cost = sum(graph.get_weight(best_individual[i], best_individual[i+1])
-                 for i in range(len(best_individual) - 1))
+        final_cost = compute_cost( best_individual )
 
-        return {"tour": best_individual, "cost": final_cost}
+        return {"tour": best_individual, "cost": final_cost, "meta": vars(self)}
