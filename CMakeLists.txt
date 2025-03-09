@@ -152,3 +152,9 @@ add_custom_target(run
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS ${APP_VENV}
 )
+
+add_custom_target(analyze
+    COMMAND ${APP_VENV}/bin/python ${CMAKE_SOURCE_DIR}/analysis/analyze.py --save results.json
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    DEPENDS ${APP_VENV}
+)
