@@ -4,6 +4,7 @@ import time
 import math
 import multiprocessing
 import os
+import json
 
 def verify_solution(graph, solution):
     """
@@ -73,8 +74,10 @@ solvers = [HeuristicSolver, GeneticAlgorithmSolver, SimulatedAnnealingSolver]
 # Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
 tasks = []
 for solver_cls in solvers:
-    for file in files:
-        tasks.append((solver_cls, file, tsp_optimal[file]))
+    # do each run 10 times!
+    for _ in range(10):
+        for file in files:
+            tasks.append((solver_cls, file, tsp_optimal[file]))
 
 def run_solver_task(args):
     solver_cls, file, optimal_value = args
@@ -114,4 +117,5 @@ if __name__ == "__main__":
             "optimal": optimal
         })
 
-    print(results)
+    with open('results.json', 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4, sort_keys=True)
