@@ -9,6 +9,22 @@ Requires python3, cmake, wget to be installed. Running cmake will download all d
 On Ubuntu or other Debian based systems:
 * apt install cmake python3 python3-venv wget
 
+## Additional Heuristic Search
+TODO:
+- Also add time constraints
+
+Linear Memory - Provably Optimal
+
+Depth First, Branch and bound paper
+
+Add A* to the hueristic search
+
+Unlike A*, branch and bound is any time (meaning you can pick any timescale)
+
+Minimum spanning tree is probably the best hueristic
+
+Local Search as another method, tour
+
 # Commands
 ```cmake -B build```
 - Creates a directory called 'build', downloads the dataset, and sets up the python virtual environment
