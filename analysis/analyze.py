@@ -35,11 +35,15 @@ for filename, results in data.items():
 # Create DataFrame
 df = pd.DataFrame(data_rows)
 
-# Plot average accuracy per file grouped by Solver
-solver_accuracy_df = df.groupby(['File', 'Solver']).mean().reset_index()
-pivot_df = solver_accuracy_df.pivot(index='File', columns='Solver', values='Accuracy')
+# ----------------------------
+# Plot 1: Accuracy per File by Solver with error bars
+# ----------------------------
+# Compute mean and std for Accuracy per File and Solver
+solver_accuracy_stats = df.groupby(['File', 'Solver'])['Accuracy'].agg(['mean', 'std']).reset_index()
+pivot_mean = solver_accuracy_stats.pivot(index='File', columns='Solver', values='mean')
+pivot_std = solver_accuracy_stats.pivot(index='File', columns='Solver', values='std')
 
-ax = pivot_df.plot(kind='bar', figsize=(10, 6))
+ax = pivot_mean.plot(kind='bar', figsize=(10, 6), yerr=pivot_std, capsize=4)
 ax.set_title('Accuracy per File by Solver')
 ax.set_ylabel('Accuracy (Optimal / Solver Cost)')
 ax.set_xlabel('File')
@@ -52,9 +56,14 @@ if args.save:
 else:
     plt.show()
 
-# Plot average accuracy by Solver
-solver_avg_accuracy = df.groupby('Solver')['Accuracy'].mean()
-ax = solver_avg_accuracy.plot(kind='bar', figsize=(10, 6), color='skyblue', edgecolor='black')
+# ----------------------------
+# Plot 2: Average Accuracy by Solver with error bars
+# ----------------------------
+# Compute mean and std for Accuracy by Solver
+solver_accuracy_overall = df.groupby('Solver')['Accuracy'].agg(['mean', 'std'])
+ax = solver_accuracy_overall['mean'].plot(kind='bar', figsize=(10, 6), 
+                                          yerr=solver_accuracy_overall['std'], 
+                                          color='skyblue', edgecolor='black', capsize=4)
 ax.set_title('Average Accuracy per Solver')
 ax.set_ylabel('Average Accuracy')
 ax.set_xlabel('Solver')
@@ -66,9 +75,15 @@ if args.save:
 else:
     plt.show()
 
-# Plot execution time per file using pivot_table to handle duplicates
-pivot_time = df.pivot_table(index='File', columns='Solver', values='Time', aggfunc='mean')
-ax = pivot_time.plot(kind='bar', figsize=(10, 6))
+# ----------------------------
+# Plot 3: Execution Time per File by Solver with error bars
+# ----------------------------
+# Compute mean and std for Time per File and Solver
+time_stats = df.groupby(['File', 'Solver'])['Time'].agg(['mean', 'std']).reset_index()
+pivot_mean_time = time_stats.pivot(index='File', columns='Solver', values='mean')
+pivot_std_time = time_stats.pivot(index='File', columns='Solver', values='std')
+
+ax = pivot_mean_time.plot(kind='bar', figsize=(10, 6), yerr=pivot_std_time, capsize=4)
 ax.set_title('Execution Time per File by Solver')
 ax.set_ylabel('Time (seconds)')
 ax.set_xlabel('File')
