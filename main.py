@@ -1,3 +1,4 @@
+from collections import defaultdict
 import tsplib95
 import time
 import math
@@ -26,21 +27,26 @@ for file in files:
     # Parse the file content into a TSPLIB graph
     tsp_data[file] = tsplib95.parse(file_content)
 
-solvers = [HeuristicSolver] #, GeneticAlgorithmSolver, SimulatedAnnealingSolver]
+solvers = [HeuristicSolver, GeneticAlgorithmSolver ]#, SimulatedAnnealingSolver]
 
-results = {}
+results = defaultdict(list)
 
 for solver_cls in solvers:
     for file, graph in tsp_data.items():
         solver_instance = solver_cls()
+
+        if solver_cls == GeneticAlgorithmSolver:
+            solver_instance.set_meta_config(2,0.5,0.5,0.5,10)
+
         start_time = time.time()
         solution = solver_instance.solve(graph)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        results[file] = {
+        results[file].append({
+            "solver" : solver_cls.__qualname__,
             "solution": solution,
             "time": elapsed_time,
             "optimal": tsp_optimal[file]
-        }
+        })
 
 print(results)
