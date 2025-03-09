@@ -104,8 +104,8 @@ class GeneticAlgorithmSolver:
             population.sort(key=lambda ind: compute_cost(ind))
 
             if best_cost > compute_cost( population[0] ):
-                best_cost = compute_cost( population[0] )
                 best_individual = population[0]
+                best_cost = compute_cost( best_individual )
 
             new_population = []
 
@@ -129,5 +129,15 @@ class GeneticAlgorithmSolver:
                 new_population.append(child)
 
             population = new_population
+
+        # Sort current population based on tour cost
+        population.sort(key=lambda ind: compute_cost(ind))
+
+        if best_cost > compute_cost( population[0] ):
+            best_individual = population[0]
+            best_cost = compute_cost( best_individual )
        
-        return {"tour": best_individual, "cost": best_cost}
+        final_cost = sum(graph.get_weight(best_individual[i], best_individual[i+1])
+                 for i in range(len(best_individual) - 1))
+
+        return {"tour": best_individual, "cost": final_cost}
