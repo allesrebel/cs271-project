@@ -26,7 +26,7 @@ class HeuristicSolver:
         """
 
         # a list of nodes we've got to process
-        unvisited = set( graph.node_coords.keys() )
+        unvisited = set( graph.get_nodes() )
 
         distance = 0
         current = random.choice(tuple(unvisited))
