@@ -74,8 +74,8 @@ solvers = [HeuristicSolver, GeneticAlgorithmSolver, SimulatedAnnealingSolver]
 # Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
 tasks = []
 for solver_cls in solvers:
-    # do each run 10 times!
-    for _ in range(10):
+    # do each run 100 times!
+    for _ in range(100):
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file]))
 
