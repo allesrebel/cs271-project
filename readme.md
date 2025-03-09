@@ -14,6 +14,8 @@ On Ubuntu or other Debian based systems:
 - Creates a directory called 'build', downloads the dataset, and sets up the python virtual environment
 ```cmake --build build --target run```
 - Uses the 'build' folder scripts to run the python code in the project using the virtual environment
+```cmake --build build --target analyze```
+- Uses the 'build' folder's virtual environment to run the analysis script on a result.json (in the root dir). Outputs images
 
 # Manual Usage (without cmake)
 Pip install requirements.txt, and then run ```main.py``

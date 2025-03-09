@@ -48,6 +48,7 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 if args.save:
     plt.savefig('accuracy_per_file_solver.png', bbox_inches='tight')
+    plt.close()
 else:
     plt.show()
 
@@ -61,6 +62,7 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 if args.save:
     plt.savefig('average_accuracy_solver.png', bbox_inches='tight')
+    plt.close()
 else:
     plt.show()
 
@@ -75,5 +77,6 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 if args.save:
     plt.savefig('execution_time_filewise_solver.png', bbox_inches='tight')
+    plt.close()
 else:
     plt.show()
