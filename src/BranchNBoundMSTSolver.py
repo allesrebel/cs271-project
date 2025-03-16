@@ -32,6 +32,11 @@ class BranchAndBoundMSTSolver:
               - "cost": The total cost (distance) of the computed tour.
               - "meta": Additional metadata about the solver (vars(self)).
         """
+        # Just to keep things finishing in a reasonable timeline
+        # we'll kill all jobs that take longer than 10 mins (Since they'd take too long
+        # in a realworld applications)
+        if not timelimit:
+            timelimit = 10 * 60
 
         # Convert the node set to a list for stable indexing
         nodes = list(graph.get_nodes())

@@ -36,6 +36,12 @@ class SimulatedAnnealingSolver:
                         starting and ending at the same node.
               - "cost": The total cost (distance) of the computed tour.
         """
+        # Just to keep things finishing in a reasonable timeline
+        # we'll kill all jobs that take longer than 10 mins (Since they'd take too long
+        # in a realworld applications)
+        if not timelimit:
+            timelimit = 10 * 60
+
         # Obtain nodes and verify that the list is not empty.
         nodes = list(graph.get_nodes())
         if not nodes:

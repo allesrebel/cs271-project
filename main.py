@@ -60,6 +60,7 @@ from src.SimulatedAnnealingSolver import SimulatedAnnealingSolver
 from src.BranchNBoundMSTSolver import BranchAndBoundMSTSolver
 from src.AStarSolver import AStarSolver
 from src.LocalSearchSolver import LocalSearchSolver
+from src.AStarSolverMinDist import AStarSolverMinDist
 
 
 # List of TSPLIB instance files and their known optimal costs.
@@ -79,28 +80,37 @@ solvers = [
     GeneticAlgorithmSolver, 
     SimulatedAnnealingSolver,
     AStarSolver,
+    AStarSolverMinDist,
     LocalSearchSolver
 ]
 
 # Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
 tasks = []
 for solver_cls in solvers:
-    # do each run 1 times, with no timelimit
-    for _ in range(1):#10):
-        for file in files:
-            tasks.append((solver_cls, file, tsp_optimal[file], None))
     # do each run 1 times, with 1 min of limit
     for _ in range(1):#10):
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file], 60))
+
     # do each run 1 times, with 2 min of limit
     for _ in range(1):#10):
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file], 60*2))
+
     # do each run 1 times, with 5 min of limit
     for _ in range(1):#100):
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file], 60*5))
+
+    if solver_cls == 'AStarSolver':
+        # only do A Star on time bound, since it takes 12 hours(Or more)
+        # larger cities
+        continue
+
+    # do each run 1 times, with no timelimit
+    for _ in range(1):#10):
+        for file in files:
+            tasks.append((solver_cls, file, tsp_optimal[file], None))
 
 def run_solver_task(args):
     solver_cls, file, optimal_value, timelimit = args

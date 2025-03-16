@@ -64,13 +64,13 @@
 	The \textbf{Minimum Distance} heuristic (or greedy algorithm) selects the nearest unvisited city at each step. This greedy approach produces a complete solution almost instantly; however, it does not refine its solution iteratively. In other words, providing additional time beyond the initial solution does not improve the outcome. Its simplicity is attractive for extremely tight deadlines, though the resulting tour is typically suboptimal compared to more sophisticated methods.
 	
 	\subsubsection{Graph Based A* Search}
-	A* search is a well-known graph traversal and pathfinding algorithm that employs a heuristic function to estimate the cost from the current node to the goal. For TSP, the heuristic is typically based on an approximation—such as using a minimum spanning tree (MST) of the remaining nodes—to guide the search. Although A* can theoretically be interrupted to provide a partial solution, it is generally not considered an anytime algorithm because a valid, fully optimal solution is only available after the complete search has been conducted. As a result, under time constraints, partial improvements are not readily observable.
+	A* search is a well-known graph traversal and pathfinding algorithm that employs a heuristic function to estimate the cost from the current node to the goal. For TSP, a minimum spanning tree (MST) of the remaining nodes—to guide the search is used as the heuristic. Although A* can theoretically be interrupted to provide a partial solution, it is generally not considered an anytime algorithm because a valid, fully optimal solution is only available after the complete search has been conducted. To improve it's performance in the face of time constraints, the best partial solution is completed using Simple Minimum Distance is also evaluated and compared against the other methods.
 	
 	\subsubsection{Tree Based Branch and Bound with MST}
 	The \textbf{Branch and Bound} method systematically enumerates candidate tours and prunes paths where the lower bound—often derived from the MST cost of the remaining nodes—exceeds the current best solution. Like A*, this method constructs the solution node by node and only provides a complete solution once the search is finished. Consequently, even if more time is allocated, improvements are only realized after the algorithm completes the necessary exploration, making it less adaptable to incremental deadline constraints.
 
 	\subsection{Local Search-Based Approaches}
-	Local search algorithms are iterative methods that start from an initial solution and improve it by exploring the neighborhood of that solution. In this context, the "neighborhood" consists of solutions that are reachable by making small modifications (e.g., swapping two cities in the tour). These methods are categorized as anytime algorithms since they always yield a valid solution and can progressively enhance solution quality as more computation time is provided. However, a common challenge for local search is the risk of getting trapped in local optima, where no small change results in an improvement. To mitigate this, techniques such as random restarts, perturbation, or metaheuristic enhancements (e.g., simulated annealing or genetic operators) are often incorporated.
+	Local search algorithms are iterative methods that start from an initial solution and improve it by exploring the neighborhood of that solution. In this context, the "neighborhood" consists of solutions that are reachable by making small modifications (e.g., swapping two cities in the tour). These methods are categorized as anytime algorithms since they always yield a valid solution and can progressively enhance solution quality as more computation time is provided. However, a common challenge for local search is the risk of getting trapped in local optima, where no small change results in an improvement. To mitigate this, techniques such as random restarts, perturbation, or other inspired enhancements (e.g., simulated annealing or genetic operators) are often incorporated.
 	
 	\subsubsection{Standard Local Search}
 	Standard local search iteratively improves a candidate solution by exploring its neighborhood (e.g., using 2-opt or 3-opt exchanges). This approach is an anytime algorithm, meaning it always produces a valid solution, and additional iterations typically yield better results. Given more time, the algorithm can progressively escape shallow local minima, though it may still stagnate in particularly rugged search spaces.
@@ -96,14 +96,16 @@
 	The experimental findings reveal significant differences in algorithm performance and their sensitivity to additional computational time:
 	
 	\subsection{Heuristic-Based Methods}
+	
+	
 	\subsubsection{Simple Heuristic, Minimum Distance}
 	The Minimum Distance heuristic provided solutions rapidly. However, due to its non-iterative nature, more runtime does not enhance the solution quality. Its performance remains static regardless of additional time beyond initial solution generation. To make this a bit more Competitive, random starting locations were implemented. However, the earlier limitation still applies; upon completion of a solution, additional time does not improve solution quality.
 	
-	\subsection{Graph-Based Heuristic Methods}
-	\begin{itemize}[noitemsep]
-		\item \textbf{A* Search:} A* produces optimal solutions given enough time, it is not inherently an anytime algorithm. Its solution quality does not improve incrementally; instead, the complete solution is only available once the entire search has been conducted. Under tight deadlines, A* fails to complete the full search, providing no valid solution.
-		\item \textbf{Branch and Bound with MST:} Similar to A*, the Branch and Bound approach relies on a systematic, node-by-node construction of the solution. Thus, it only delivers a final valid solution after exploring a significant portion of the search space. With additional time, it can provide improvements, but this improvement is not gradual—it is contingent upon completing the necessary search depth.
-	\end{itemize}
+	\subsection{Graph-Based A Star Search}
+	A* produces optimal solutions given enough time, it is not inherently an anytime algorithm. Its solution quality does not improve incrementally; instead, the complete solution is only available once the entire search has been conducted. Under tight deadlines, A* fails to complete the full search, providing no valid solution.
+	
+	\subsection{Tree-Based Branch and Bound with MST} 
+	Similar to A*, the Branch and Bound approach relies on a systematic, node-by-node construction of the solution. It only delivers a final valid solution after exploring a significant portion of the search space. With additional time, it can provide improvements, but this improvement is not gradual—it is contingent upon completing the necessary search depth.
 	
 	\subsection{Local Search-Based Methods}
 	\begin{itemize}[noitemsep]
