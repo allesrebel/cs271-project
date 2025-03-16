@@ -1,4 +1,5 @@
 import time
+import random
 
 class LocalSearchSolver:
     """
@@ -41,7 +42,8 @@ class LocalSearchSolver:
             return {"tour": [], "cost": 0, "meta": vars(self)}
 
         # Create an initial tour.
-        # We fix the starting node at index 0.
+        random.shuffle(nodes)
+
         current_tour = nodes[:]  # initial order as given
         # Helper: compute the total cost of a tour (cyclic: returning to the start)
         def compute_cost(tour):
