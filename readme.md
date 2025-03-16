@@ -15,8 +15,6 @@ TODO:
 
 Linear Memory - Provably Optimal
 
-Depth First, Branch and bound paper
-
 Add A* to the hueristic search
 
 Unlike A*, branch and bound is any time (meaning you can pick any timescale)

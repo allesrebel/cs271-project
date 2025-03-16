@@ -58,24 +58,38 @@ def verify_solution(graph, solution):
 from src.GeneticAlgorithmSolver import GeneticAlgorithmSolver
 from src.HeuristicSolver import HeuristicSolver
 from src.SimulatedAnnealingSolver import SimulatedAnnealingSolver
+from src.BranchNBoundMSTSolver import BranchAndBoundMSTSolver
+from src.AStarSolver import AStarSolver
+from src.LocalSearchSolver import LocalSearchSolver
+
 
 # List of TSPLIB instance files and their known optimal costs.
-files = ["att48.tsp", "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
+#files = ["att48.tsp"]#, "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
+files = ["p01.tsp"]
+
 tsp_optimal = {
-    "att48.tsp": 10628,
-    "dantzig42.tsp": 699,
-    "fri26.tsp": 937,
-    "gr17.tsp": 2085,
+    #"att48.tsp": 10628,
+    # "dantzig42.tsp": 699,
+    # "fri26.tsp": 937,
+    #"gr17.tsp": 2085,
     "p01.tsp": 291
 }
 
-solvers = [HeuristicSolver, GeneticAlgorithmSolver, SimulatedAnnealingSolver]
+solvers = [
+    # HeuristicSolver, 
+    BranchAndBoundSolver, 
+    BranchAndBoundMSTSolver, 
+    # GeneticAlgorithmSolver, 
+    # SimulatedAnnealingSolver,
+    AStarSolver,
+    LocalSearchSolver
+]
 
 # Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
 tasks = []
 for solver_cls in solvers:
     # do each run 100 times!
-    for _ in range(100):
+    for _ in range(1):#100):
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file]))
 
