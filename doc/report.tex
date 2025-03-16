@@ -64,7 +64,7 @@
 	The \textbf{Minimum Distance} heuristic (or greedy algorithm) selects the nearest unvisited city at each step. This greedy approach produces a complete solution almost instantly; however, it does not refine its solution iteratively. In other words, providing additional time beyond the initial solution does not improve the outcome. Its simplicity is attractive for extremely tight deadlines, though the resulting tour is typically suboptimal compared to more sophisticated methods.
 	
 	\subsubsection{Graph Based A* Search}
-	A* search is a well-known graph traversal and pathfinding algorithm that employs a heuristic function to estimate the cost from the current node to the goal. For TSP, a minimum spanning tree (MST) of the remaining nodes—to guide the search is used as the heuristic. Although A* can theoretically be interrupted to provide a partial solution, it is generally not considered an anytime algorithm because a valid, fully optimal solution is only available after the complete search has been conducted. To improve it's performance in the face of time constraints, the best partial solution is completed using Simple Minimum Distance is also evaluated and compared against the other methods.
+	A* search is a well-known graph traversal and pathfinding algorithm that employs a heuristic function to estimate the cost from the current node to the goal. For TSP, a minimum spanning tree (MST) of the remaining nodes—to guide the search is used as the heuristic. Although A* can theoretically be interrupted to provide a partial solution, it is generally not considered an anytime algorithm because a valid, fully optimal solution is only available after the complete search has been conducted. To improve it's performance with time constraints, the best partial solution is completed using Simple Minimum Distance is also evaluated and compared against the other methods.
 	
 	\subsubsection{Tree Based Branch and Bound with MST}
 	The \textbf{Branch and Bound} method systematically enumerates candidate tours and prunes paths where the lower bound—often derived from the MST cost of the remaining nodes—exceeds the current best solution. Like A*, this method constructs the solution node by node and only provides a complete solution once the search is finished. Consequently, even if more time is allocated, improvements are only realized after the algorithm completes the necessary exploration, making it less adaptable to incremental deadline constraints.
@@ -82,14 +82,7 @@
 	Simulated Annealing (SA) employs a probabilistic acceptance criterion that allows for occasional uphill moves to escape local optima. SA starts with a complete solution and gradually improves it by accepting changes based on a cooling schedule. As an anytime algorithm, SA always provides a valid solution, with quality generally improving with more iterations—up to the point where the temperature becomes too low to allow further meaningful changes.
 	
 	\section{Experimental Setup}
-	The experimental setup involves running each solver on a desktop computer equipped with a multi-threaded processor. Each algorithm is implemented as a separate thread, ensuring that all solvers work with the same dataset and starting position. Experiments were conducted on the five TSPLIB95 instances listed in Table~\ref{table:tsplib}. For each dataset, we performed approximately ten runs under four different time controls:
-	\begin{itemize}[noitemsep]
-		\item 1 second
-		\item 1 minute
-		\item 2 minutes
-		\item 5 minutes
-		\item Unlimited time
-	\end{itemize}
+	The experimental setup involves running each solver on a desktop computer equipped with a multi-threaded processor. Each algorithm is implemented as a separate thread, ensuring that all solvers work with the same dataset and starting position. Experiments were conducted on the five TSPLIB95 instances listed in Table~\ref{table:tsplib}. For each dataset, various deadlines were imposed, ranging from a second to minutes. And each individual time control or deadline, was run multiple times to collect a statistical distribution. This helps control variation in performance due to randomness inherent in a operating system's scheduling or caching. To further insure additional bias was avoided, each trial configuration was shuffled prior to assignment to random thread. Threads were limited to number of threads the processor architecture supported.
 	Performance metrics include the quality of the solution (measured as the deviation from the known optimal cost), computational time, and consistency across runs. Special emphasis was placed on understanding whether additional time leads to incremental improvements (as with anytime algorithms) or if a method must complete a full, node-by-node construction before yielding a valid solution.
 	
 	\section{Results and Discussion}
@@ -120,8 +113,9 @@
 	\section{Conclusions and Future Work}
 	This survey examined several approaches to the TSP under deadline constraints, focusing on how solution quality is affected by available computation time. Key conclusions include:
 	\begin{itemize}[noitemsep]
-		\item \textbf{Anytime vs. Complete Search Algorithms:} Anytime algorithms, which continuously refine a complete solution, are advantageous under strict time constraints. In contrast, methods that require a complete node-by-node construction (like A* and Branch and Bound) may fail to produce useful solutions if interrupted.
-		\item \textbf{Incremental Improvement:} For algorithms such as Genetic Algorithms and Simulated Annealing, additional computational time typically results in better solutions as the search space is explored more thoroughly. This improvement is gradual and observable over multiple iterations.
+		\item \textbf{Anytime vs. Complete Search Algorithms:} Anytime algorithms, which continuously refine a complete solution, are advantageous under longer time constraints. In contrast, methods that require a complete node-by-node construction (like A* and Branch and Bound) may fail to produce useful solutions if interrupted.
+		\item \textbf {Enhanced Complete Search Algorithms:} Conversion of a complete search algorithm to meet time constraints enables failing algorithms to produce valid solutions, with improved performance. A* with minimum search heuristic demonstrates this clearly.
+		\item \textbf{Incremental Improvement:} For algorithms such as Genetic Algorithms and Simulated Annealing, additional computational time typically results in better solutions as the search space is explored more thoroughly. This improvement is gradual and observable over multiple iterations. There's a timescale where these methods generally perform better, and before this timescale, heuristics dominate.
 		\item \textbf{Scalability Issues:} As problem size increases, even anytime algorithms face challenges in finding near-optimal solutions quickly, highlighting the need for efficient parallelization and hybrid strategies.
 	\end{itemize}
 	

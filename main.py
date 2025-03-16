@@ -4,6 +4,7 @@ import time
 import multiprocessing
 import os
 import json
+import random
 
 def verify_solution(graph, solution):
     """
@@ -64,14 +65,14 @@ from src.AStarSolverMinDist import AStarSolverMinDist
 
 
 # List of TSPLIB instance files and their known optimal costs.
-files = ["att48.tsp", "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
+files = ['p01.tsp', 'gr17.tsp', 'fri26.tsp', 'dantzig42.tsp', 'att48.tsp']
 
 tsp_optimal = {
-    "att48.tsp": 10628,
-    "dantzig42.tsp": 699,
-    "fri26.tsp": 937,
+    "p01.tsp": 291,
     "gr17.tsp": 2085,
-    "p01.tsp": 291
+    "fri26.tsp": 937,
+    "dantzig42.tsp": 699,
+    "att48.tsp": 10628,
 }
 
 solvers = [
@@ -87,28 +88,23 @@ solvers = [
 # Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
 tasks = []
 for solver_cls in solvers:
-    # do each run 1 times, with 1 min of limit
-    for _ in range(1):#10):
-        for file in files:
-            tasks.append((solver_cls, file, tsp_optimal[file], 60))
+    import numpy as np
+    num_points = 50
+    values = np.linspace(1, 300, num=num_points)
+    values_int = np.rint(values).astype(int)
 
-    # do each run 1 times, with 2 min of limit
-    for _ in range(1):#10):
-        for file in files:
-            tasks.append((solver_cls, file, tsp_optimal[file], 60*2))
-
-    # do each run 1 times, with 5 min of limit
-    for _ in range(1):#100):
-        for file in files:
-            tasks.append((solver_cls, file, tsp_optimal[file], 60*5))
+    # Loop over the integer values
+    for timelimit in values_int:
+        for _ in range(10):
+            for file in files:
+                tasks.append((solver_cls, file, tsp_optimal[file], timelimit))
 
     if solver_cls == 'AStarSolver':
-        # only do A Star on time bound, since it takes 12 hours(Or more)
-        # larger cities
+        # only do A Star on time bound, since it takes 24 hours(Or more)
+        # larger city files, which isn't worth it given more optimal algs
         continue
 
-    # do each run 1 times, with no timelimit
-    for _ in range(1):#10):
+    for _ in range(10):
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file], None))
 
@@ -140,6 +136,8 @@ def run_solver_task(args):
 if __name__ == "__main__":
     # Spawn only as many processes as there are CPU cores.
     num_processors = multiprocessing.cpu_count()
+    # Shuffle Task list to remove bias
+    random.shuffle(tasks)
     with multiprocessing.Pool(processes=num_processors) as pool:
         results_list = pool.map(run_solver_task, tasks)
 
