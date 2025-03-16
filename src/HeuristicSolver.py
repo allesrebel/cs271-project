@@ -1,4 +1,5 @@
 import random
+import time
 
 
 class HeuristicSolver:
@@ -12,7 +13,7 @@ class HeuristicSolver:
     def __init__(self):
         pass
 
-    def solve(self, graph):
+    def solve(self, graph, timestart, timelimit=None):
         """
         Solves the TSP using the Nearest Neighbor heuristic.
 
@@ -38,6 +39,8 @@ class HeuristicSolver:
 
         # Iteratively visit the nearest unvisited neighbor
         while unvisited:
+            if timelimit and (timelimit < time.time() - timestart):
+                break;
             next_node = min(unvisited, key=lambda node: graph.get_weight(current, node))
             distance += graph.get_weight(current, next_node)
             tour.append(next_node)

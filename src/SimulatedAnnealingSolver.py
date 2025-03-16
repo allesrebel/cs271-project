@@ -1,5 +1,6 @@
 import random
 import math
+import time
 
 class SimulatedAnnealingSolver:
     """
@@ -20,7 +21,7 @@ class SimulatedAnnealingSolver:
         self.iterations_per_temp = random.randint(100, 500)     # iterations per temperature level
         self.temperature_threshold = 1e-3                       # stopping condition for temperature
 
-    def solve(self, graph):
+    def solve(self, graph, timestart, timelimit=None):
         """
         Solves the TSP using simulated annealing.
 
@@ -61,6 +62,10 @@ class SimulatedAnnealingSolver:
         # Main simulated annealing loop.
         while T > self.temperature_threshold:
             for _ in range(self.iterations_per_temp):
+                # Have we hit our time control?
+                if timelimit and (timelimit < time.time() - timestart):
+                    return {"tour": best_solution, "cost": best_cost, "meta": vars(self) }
+
                 # Generate a neighboring solution by swapping two interior nodes.
                 i, j = random.sample(range(1, len(current_solution) - 1), 2)
                 neighbor = current_solution[:]

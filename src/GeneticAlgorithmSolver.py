@@ -1,4 +1,5 @@
 import random
+import time
 
 class GeneticAlgorithmSolver:
     """
@@ -22,7 +23,7 @@ class GeneticAlgorithmSolver:
         self.crossover_rate = random.uniform(0.5, 0.9)       # e.g., between 50% and 90%
         self.num_generations = random.randint(100, 500)      # e.g., between 100 and 500 generations
 
-    def solve(self, graph):
+    def solve(self, graph, timestart, timelimit=None):
         """
         Solves the TSP using a genetic algorithm.
 
@@ -55,11 +56,6 @@ class GeneticAlgorithmSolver:
         
         # Initialize the population.
         population = [create_individual() for _ in range(self.population_size)]
-        
-        # Fitness function: inverse of cost (lower cost means higher fitness).
-        def fitness(individual):
-            cost = compute_cost(individual)
-            return 1.0 / cost if cost > 0 else float('inf')
         
         # crossover (OX) for TSP.
         def crossover(parent1, parent2):
@@ -100,6 +96,10 @@ class GeneticAlgorithmSolver:
 
         # Main GA loop, generating the next generation
         for generation in range(self.num_generations):
+            # Enforce Time Limit
+            if timelimit and (timelimit < time.time() - timestart):
+                break;
+
             # Sort current population based on tour cost.
             population.sort(key=lambda ind: compute_cost(ind))
 

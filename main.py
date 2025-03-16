@@ -1,7 +1,6 @@
 import collections
 import tsplib95
 import time
-import math
 import multiprocessing
 import os
 import json
@@ -64,23 +63,21 @@ from src.LocalSearchSolver import LocalSearchSolver
 
 
 # List of TSPLIB instance files and their known optimal costs.
-#files = ["att48.tsp"]#, "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
-files = ["p01.tsp"]
+files = ["att48.tsp", "dantzig42.tsp", "fri26.tsp", "gr17.tsp", "p01.tsp"]
 
 tsp_optimal = {
-    #"att48.tsp": 10628,
-    # "dantzig42.tsp": 699,
-    # "fri26.tsp": 937,
-    #"gr17.tsp": 2085,
+    "att48.tsp": 10628,
+    "dantzig42.tsp": 699,
+    "fri26.tsp": 937,
+    "gr17.tsp": 2085,
     "p01.tsp": 291
 }
 
 solvers = [
-    # HeuristicSolver, 
-    BranchAndBoundSolver, 
+    HeuristicSolver, 
     BranchAndBoundMSTSolver, 
-    # GeneticAlgorithmSolver, 
-    # SimulatedAnnealingSolver,
+    GeneticAlgorithmSolver, 
+    SimulatedAnnealingSolver,
     AStarSolver,
     LocalSearchSolver
 ]
@@ -88,13 +85,25 @@ solvers = [
 # Prepare tasks with picklable parameters: (solver class, file name, optimal cost).
 tasks = []
 for solver_cls in solvers:
-    # do each run 100 times!
+    # do each run 1 times, with no timelimit
+    for _ in range(1):#10):
+        for file in files:
+            tasks.append((solver_cls, file, tsp_optimal[file], None))
+    # do each run 1 times, with 1 min of limit
+    for _ in range(1):#10):
+        for file in files:
+            tasks.append((solver_cls, file, tsp_optimal[file], 60))
+    # do each run 1 times, with 2 min of limit
+    for _ in range(1):#10):
+        for file in files:
+            tasks.append((solver_cls, file, tsp_optimal[file], 60*2))
+    # do each run 1 times, with 5 min of limit
     for _ in range(1):#100):
         for file in files:
-            tasks.append((solver_cls, file, tsp_optimal[file]))
+            tasks.append((solver_cls, file, tsp_optimal[file], 60*5))
 
 def run_solver_task(args):
-    solver_cls, file, optimal_value = args
+    solver_cls, file, optimal_value, timelimit = args
     file_path = os.path.join('dataset', file)
     
     # Read and parse the file content inside the worker.
@@ -106,14 +115,17 @@ def run_solver_task(args):
     
     solver_instance = solver_cls()
     start_time = time.time()
-    solution = solver_instance.solve(graph)
+    solution = solver_instance.solve(graph, start_time, timelimit)
     elapsed_time = time.time() - start_time
 
     valid, message = verify_solution(graph, solution)
     if not valid:
-        print(f"Verification failed for {solver_cls.__qualname__} on {file}: {message}")
+        if timelimit:
+            print(f"Verification failed for {solver_cls.__qualname__} on {file} with {timelimit}s limit: {message}")
+        else:
+            print(f"Verification failed for {solver_cls.__qualname__} on {file}: {message}")
 
-    return file, solver_cls.__qualname__, solution, elapsed_time, optimal_value
+    return file, solver_cls.__qualname__, solution, elapsed_time, optimal_value, timelimit
 
 if __name__ == "__main__":
     # Spawn only as many processes as there are CPU cores.
@@ -123,12 +135,13 @@ if __name__ == "__main__":
 
     # Aggregate results in a thread-safe manner in the main process.
     results = collections.defaultdict(list)
-    for file, solver_name, solution, elapsed_time, optimal in results_list:
+    for file, solver_name, solution, elapsed_time, optimal, timelimit in results_list:
         results[file].append({
             "solver": solver_name,
             "solution": solution,
             "time": elapsed_time,
-            "optimal": optimal
+            "optimal": optimal,
+            "timelimit": timelimit if timelimit else 0
         })
 
     with open('results.json', 'w', encoding='utf-8') as f:

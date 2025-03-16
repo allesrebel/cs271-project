@@ -1,5 +1,6 @@
 import math
 import heapq
+import time
 
 class BranchAndBoundMSTSolver:
     """
@@ -15,7 +16,7 @@ class BranchAndBoundMSTSolver:
     def __init__(self):
         pass
 
-    def solve(self, graph):
+    def solve(self, graph, timestart, timelimit=None):
         """
         Solves the TSP using a Branch-and-Bound approach with an MST-based bound.
 
@@ -126,6 +127,10 @@ class BranchAndBoundMSTSolver:
         # 4) Main Branch-and-Bound loop
         # ---------------------------------------------------------------------
         while L:
+            # Enforce the time limit
+            if timelimit and (timelimit < time.time() - timestart):
+                break
+
             bound, current_cost, path, visited = heapq.heappop(L)
 
             # Prune if bound >= best_cost

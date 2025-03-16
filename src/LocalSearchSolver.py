@@ -1,3 +1,5 @@
+import time
+
 class LocalSearchSolver:
     """
     A solver for the Traveling Salesman Problem using local search.
@@ -10,7 +12,7 @@ class LocalSearchSolver:
     def __init__(self):
         pass
 
-    def solve(self, graph):
+    def solve(self, graph, timestart, timelimit=None):
         """
         Solves the TSP using a local search algorithm with two-node swaps.
 
@@ -49,6 +51,10 @@ class LocalSearchSolver:
 
         # Local search: try swapping two nodes (except the first, which is fixed)
         while improvement:
+            # enforce time limit
+            if timelimit and (timelimit < time.time() - timestart):
+                break;
+
             improvement = False
             # Iterate over all pairs (i, j) with i < j, starting from 1
             for i in range(1, n):

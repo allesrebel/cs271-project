@@ -1,5 +1,6 @@
 import math
 import heapq
+import time
 
 class AStarSolver:
     """
@@ -13,7 +14,7 @@ class AStarSolver:
     def __init__(self):
         pass
 
-    def solve(self, graph):
+    def solve(self, graph, timestart, timelimit):
         """
         Solves the TSP using an A* search algorithm.
 
@@ -103,6 +104,10 @@ class AStarSolver:
         best_state_cost = {}
 
         while queue:
+            # Enforce time limit
+            if timelimit and (timelimit < time.time() - timestart):
+                break
+
             f, g, path, visited = heapq.heappop(queue)
             current = path[-1]
 
