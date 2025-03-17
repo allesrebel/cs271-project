@@ -84,6 +84,22 @@
 	
 	\section{Experimental Setup}
 	The experimental setup involves running each solver on a desktop computer equipped with a multi-threaded processor. Each algorithm is implemented as a separate thread, ensuring that all solvers work with the same dataset and starting position. Experiments were conducted on the five TSPLIB95 instances listed in Table~\ref{table:tsplib}. For each dataset, various deadlines were imposed, ranging from a second to minutes. And each individual time control or deadline, was run multiple times to collect a statistical distribution. This helps control variation in performance due to randomness inherent in a operating system's scheduling or caching. To further insure additional bias was avoided, each trial configuration was shuffled prior to assignment to random thread. Threads were limited to number of threads the processor architecture supported.
+	
+	The hardware used for this experiment is:
+	\begin{center}
+		\begin{tabular}{|c|c|}
+			\hline
+			Component & Specification \\
+			\hline
+			Processor & Intel Core i7-6950X  \\
+			\hline
+			RAM & 64 GiB DDR4 \\
+			\hline
+			OS & Ubuntu 24.10  \\
+			\hline
+		\end{tabular}
+	\end{center}
+	
 	Performance metrics include the quality of the solution (measured as the deviation from the known optimal cost), computational time, and consistency across runs. Special emphasis was placed on understanding whether additional time leads to incremental improvements (as with anytime algorithms) or if a method must complete a full, node-by-node construction before yielding a valid solution.
 	
 	\section{Experimental Results}
@@ -161,26 +177,27 @@
 	The Minimum Distance heuristic provided solutions rapidly. However, due to its non-iterative nature, more runtime does not enhance the solution quality. Its performance remains static regardless of additional time beyond initial solution generation (which is effectively linear with number of cities). To make this a bit more Competitive, random starting locations were implemented. However, the earlier limitation still applies; upon completion of a solution, additional time does not improve solution quality.
 	
 	\subsubsection{Graph-Based A Star Search}
-	A* produces optimal solutions given enough time, it is not inherently an anytime algorithm. Its solution quality does not improve incrementally; instead, the complete solution is only available once the entire search has been conducted. Under tight deadlines, A* fails to complete the full search, providing no valid solution. And this is readily apparent for larger datasets as observed, where there is simply not enough time to produce any path at all. Note, on the largest dataset, A* requires multiple days to produce a valid path on the experiment's hardware.
+	A* produces optimal solutions given enough time, it is not inherently an anytime algorithm. Its solution quality does not improve incrementally; instead, the complete solution is only available once the entire search has been conducted. 
+	Under tight deadlines or on larger datasets, A* fails to complete the full search, providing no valid solution, clearly seen across most figures. A cross over points is clearly visible on Fig \ref{fig:accuracylinegr17} where around 150 seconds, accuracy jumps from 0 to 100\%. Note, on the largest dataset, A* requires multiple days to produce a valid path on the hardware used.
 	
 	\subsubsection{Graph-Based A Star Search with Minimum Distance Fallback}
-	A* begins attempting to find a path; once the time limit is reached, the current best path is then completed using minimum distance search. Under tight deadlines, this method produces similar results to the simple minimum distance heuristic search. However, this method takes advantage A* when more generous time constraints are allowed, identifying a better initial path portion than the purely greedy approach.
+	A* begins attempting to find a path; once the time limit is reached, the current best path is then completed using minimum distance search. Under tight deadlines, this method produces similar results to the simple minimum distance heuristic search. However, this method takes advantage A* when more generous time constraints are allowed, identifying a better initial path portion than the purely greedy approach. Fig \ref{fig:accuracybartime0p01} shows this on smaller datasets, but it's also clear on the other figures with no time controls. Similarly, the performance on time controls is similar to that of the minimum distance search across all time controls. 
 	
 	\subsubsection{Tree-Based Branch and Bound with MST} 
-	The Branch and Bound approach appears to always deliver a final valid solution after exploring a minimal portion of the search space. With additional time, it does not provide improvements. Since the depth is reached even in tight timing constraints, this algorithm is effective at all timescales tested, and sometimes even optimal.
+	The Branch and Bound approach appears to always deliver a final valid solution after exploring a minimal portion of the search space. With additional time, it does not provide improvements. Since the depth is reached even in tight timing constraints, this algorithm is effective at all timescales tested, and sometimes even optimal. However, there's a dependency on complexity of the dataset. For example, on Fig \ref{fig:accuracylineatt48}, this algorithm clearly converges to a local optima, but never leaves it.
 	
 	\subsection{Local Search-Based Methods}
 	\subsubsection{Standard Local Search}
-	This method always returns a complete solution, and its quality improves incrementally with additional time as it continues to explore the solution space. However, it tends quickly converge to a local minimum. This can be seen in the standard deviation in the plots. A notable benefit of using the standard implementation is no hyper parameter configuration to achieve the observed results. 
+	This method always returns a complete solution, and its quality improves incrementally with additional time as it continues to explore the solution space. However, it tends quickly converge to a local minimum. This can be seen in the standard deviation in the plots. A notable benefit of using the standard implementation is no hyper parameter configuration to achieve the observed results. This appears to be very dataset dependent, since searching the problem space requires significant compute. 
 	
 	\subsubsection{Genetic Algorithm} 
-	The GA continuously maintains a population of valid solutions. Given more time, it evolves better candidates through successive generations, offering clear incremental improvements. Its anytime nature makes it well-suited for scenarios with varying time constraints. However, it is highly dependent on the hyper parameters. Requiring tuning if used in a production setting.
+	The GA continuously maintains a population of valid solutions. Given more time, it evolves better candidates through successive generations, offering clear incremental improvements. However, it's extremely sensitive to dataset size and hyper parameters. Fig \ref{fig:accuracylinefri26} and Fig \ref{fig:accuracylinedantzig42} demonstrate genetic algorithm unable to exit the local minima. Its anytime nature makes it well-suited for tighter time constraints, but often eclipsed by the other algorithms.
 	
 	\subsubsection{Simulated Annealing} 
-	Starting from a complete solution, SA improves iteratively as the cooling schedule allows exploration of different regions in the solution space. With additional time, the likelihood of escaping local minima increases, enhancing solution quality. Note this method is also dependent on hyper parameters, but is fairly robust over longer and longer time controls.
+	Starting from a complete solution, SA improves iteratively as the cooling schedule allows exploration of different regions in the solution space. With additional time, the likelihood of escaping local minima increases, enhancing solution quality. Note this method is also dependent on hyper parameters, but is fairly robust over longer and longer time controls. Across all the experiments, this method would improve to leading in accuracy or being close to optimal. For tight timing constraints, a solution is provided, but often not close to optimal.
 	
 	\subsection{Overall Observations}
-	The experiments confirm that anytime algorithms—those that always return a valid solution and gradually improve it (e.g., Local Search, Genetic Algorithm, and Simulated Annealing)—are more robust under deadline constraints. In contrast, algorithms like A* and Branch and Bound require complete execution to yield their optimal solutions and are less effective when limited by time.
+	The experiments confirm that anytime algorithms—those that always return a valid solution and gradually improve it (e.g., Local Search, Genetic Algorithm, and Simulated Annealing)—are more robust under deadline constraints. In contrast, algorithms like A* and Branch and Bound require complete execution to yield their optimal solutions and are less effective when limited by time. The augmented complete execution algorithms are effective in early up to about 5 seconds regardless of dataset size. This can be clearly seen on Fig \ref{fig:accuracylineatt48} (and the other time control figures).
 	
 	\subsection{Related work}
 	Other authors demonstrate improvements applied to local search style algorithms, targeting better selection strategies \cite{8367362}\cite{6492788}. This work focuses primarily on deadline impact to accuracy for a range of algorithms. In addition we propose an enhancement to a traditionally inapplicable algorithm for TSP due to exponential growth of the problem space.
