@@ -87,67 +87,68 @@
 	Performance metrics include the quality of the solution (measured as the deviation from the known optimal cost), computational time, and consistency across runs. Special emphasis was placed on understanding whether additional time leads to incremental improvements (as with anytime algorithms) or if a method must complete a full, node-by-node construction before yielding a valid solution.
 	
 	\section{Experimental Results}
-	
+	\subsubsection{Accuracy over Time Controls per Solver}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_line_p01.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over various time limits from 1 second to 300 seconds for each solver. Standard deviation of 10 runs is displayed for each data point with the average plotted. This dataset is p01.tsp, a smaller dataset.}
 		\label{fig:accuracylinep01}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_line_gr17.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over various time limits from 1 second to 300 seconds for each solver. Standard deviation of 10 runs is displayed for each data point with the average plotted. This dataset is gr17.tsp, a smaller dataset.}
 		\label{fig:accuracylinegr17}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_line_fri26.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over various time limits from 1 second to 300 seconds for each solver. Standard deviation of 10 runs is displayed for each data point with the average plotted. This dataset is fri26.tsp, a medium sized dataset. Note AStarSolver did not complete a single run at any time limit.}
 		\label{fig:accuracylinefri26}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_line_dantzig42.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over various time limits from 1 second to 300 seconds for each solver. Standard deviation of 10 runs is displayed for each data point with the average plotted. This dataset is dantzig42.tsp, a large dataset. Note AStarSolver did not complete a single run at any time limit.}
 		\label{fig:accuracylinedantzig42}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_line_att48.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over various time limits from 1 second to 300 seconds for each solver. Standard deviation of 10 runs is displayed for each data point with the average plotted. This dataset is att48.tsp, the largest dataset considered in this paper. Note AStarSolver did not complete a single run at any time limit.}
 		\label{fig:accuracylineatt48}
 	\end{figure}
 	
-	
+	\subsection{Accuracy of Each Solver with 10 min max}
+	This section of experimental data is if method converged or reached 10 minute time limit.
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_bar_time0_att48.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over each Solver, on att48.tsp, the largest dataset. Standard deviation plotted over 10 runs. Bar indicates average normalized accuracy.}
 		\label{fig:accuracybartime0att48}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_bar_time0_dantzig42.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over each Solver, on dantzig42.tsp, the larger sized dataset. Standard deviation plotted over 10 runs. Bar indicates average normalized accuracy.}
 		\label{fig:accuracybartime0dantzig42}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_bar_time0_fri26.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over each Solver, on fri26.tsp, a medium sized dataset. Standard deviation plotted over 10 runs. Bar indicates average normalized accuracy.}
 		\label{fig:accuracybartime0fri26}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_bar_time0_gr17.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over each Solver, on gr17.tsp, a small sized dataset. Standard deviation plotted over 10 runs. Bar indicates average normalized accuracy.}
 		\label{fig:accuracybartime0gr17}
 	\end{figure}
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.7\linewidth]{figures/accuracy_bar_time0_p01.tsp}
-		\caption{}
+		\caption{Normalized Accuracy over each Solver, on p01.tsp, a small sized dataset. Standard deviation plotted over 10 runs. Bar indicates average normalized accuracy.}
 		\label{fig:accuracybartime0p01}
 	\end{figure}
 	
@@ -186,18 +187,24 @@
 	
 	\section{Conclusions and Future Work}
 	This survey examined several approaches to the TSP under deadline constraints, focusing on how solution quality is affected by available computation time. Key conclusions include:
+	
 	\begin{itemize}[noitemsep]
-		\item \textbf{Anytime vs. Complete Search Algorithms:} Anytime algorithms, which continuously refine a complete solution, are advantageous under longer time constraints. In contrast, methods that require a complete node-by-node construction (like A* and Branch and Bound) may fail to produce useful solutions if interrupted.
-		\item \textbf {Enhanced Complete Search Algorithms:} Conversion of a complete search algorithm to meet time constraints allows normally failing algorithms to produce valid solutions with improved performance. A* with minimum search heuristic fallback demonstrates this clearly.
-		\item \textbf{Incremental Improvement:} For algorithms such as Genetic Algorithms and Simulated Annealing, additional computational time typically results in better solutions as the search space is explored more thoroughly. This improvement is gradual and observable over multiple iterations. There's a timescale where these methods generally perform better, and before this timescale, heuristics dominate.
-		\item \textbf{Scalability Issues:} As problem size increases, even anytime algorithms face challenges in finding near-optimal solutions quickly, highlighting the need for efficient parallelization and hybrid strategies.
+		\item \textbf{Anytime vs. Complete Search Algorithms:} Anytime algorithms, which continuously refine a complete solution, are advantageous under longer time constraints and smaller datasets. In contrast, methods that require a complete node-by-node construction (like A* and Branch and Bound) may fail to produce useful solutions if interrupted on shorter time constraints or larger datasets.
+		\item \textbf {Enhanced Complete Search Algorithms:} Conversion of a complete search algorithm to meet time constraints allows normally failing algorithms to produce valid solutions with improved performance. A* with minimum search heuristic fallback demonstrates this clearly in timescales up to 1-5 seconds. This approach is compelling for extremely tight deadlines.
+		\item \textbf{Incremental Improvement:} For algorithms such as Genetic Algorithms and Simulated Annealing, additional computational time typically results in better solutions as the search space is explored more thoroughly. These methods are particularly well suited for larger datasets as well, where other methods fail to converge to a accurate solution. This improvement is gradual and observable over multiple iterations. In about 25 seconds, these methods reach their peak performance on large datasets. 
+		\item \textbf{Scalability Issues:} As problem size increases, complete solution algorithms converge to a local minima, while anytime algorithms face challenges in finding near-optimal solutions quickly; highlighting the need for efficient parallelization and hybrid strategies.
 	\end{itemize}
+	
+	In summary, our approach combines an existing complete search algorithm with a fast, heuristic-based search to achieve strong performance on deadlines under 5 seconds across datasets of all sizes. For longer timescales, a local search enhanced with a stochastic mechanism to escape local minima consistently outperforms, typically within 30 seconds on larger datasets (such as simulated annealing).
+
+	\section{Future Work}
 	
 	Future work could explore hybrid approaches that combine the rapid initial solution of heuristics with the refinement capabilities of local search methods. Alternatively, augmenting existing greedy approaches to improve given additional time would be a good area of research. (This is in effect what most local search algorithms are doing.) Additionally, adaptive strategies that dynamically allocate computational resources based on the current solution quality may further enhance performance under varying deadline constraints.
 	
 	\section{Appendix}
 	Complete source code to reproduce these results are available online at\\
 	 \texttt{https://github.com/allesrebel/cs271-project}\cite{allesrebel_cs271project}.
+	This includes instructions to reproduce the same results along with data analyzed for the results in this report.
 	
 	% Auto generates References Section
 	\bibliographystyle{ieeetr}
