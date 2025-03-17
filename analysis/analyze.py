@@ -239,7 +239,7 @@ for dataset in df_time0['File'].unique():
     
     ax.set_xlabel('Solver')
     ax.set_ylabel('Accuracy (Optimal / Solver Cost)')
-    ax.set_title(f'Normalized Solver Accuracy at Time 0 for Dataset: {dataset}')
+    ax.set_title(f'Normalized Solver Accuracy No Time Contraint for Dataset: {dataset}')
     ax.grid(True, axis='y')
     plt.xticks(rotation=45)
     plt.tight_layout()
