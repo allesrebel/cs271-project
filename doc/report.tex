@@ -91,7 +91,7 @@
 	
 	\subsection{Heuristic-Based Methods}	
 	\subsubsection{Simple Heuristic, Minimum Distance}
-	The Minimum Distance heuristic provided solutions rapidly. However, due to its non-iterative nature, more runtime does not enhance the solution quality. Its performance remains static regardless of additional time beyond initial solution generation. To make this a bit more Competitive, random starting locations were implemented. However, the earlier limitation still applies; upon completion of a solution, additional time does not improve solution quality.
+	The Minimum Distance heuristic provided solutions rapidly. However, due to its non-iterative nature, more runtime does not enhance the solution quality. Its performance remains static regardless of additional time beyond initial solution generation (which is effectively linear with number of cities). To make this a bit more Competitive, random starting locations were implemented. However, the earlier limitation still applies; upon completion of a solution, additional time does not improve solution quality.
 	
 	\subsubsection{Graph-Based A Star Search}
 	A* produces optimal solutions given enough time, it is not inherently an anytime algorithm. Its solution quality does not improve incrementally; instead, the complete solution is only available once the entire search has been conducted. Under tight deadlines, A* fails to complete the full search, providing no valid solution. And this is readily apparent for larger datasets as observed, where there is simply not enough time to produce any path at all. Note, on the largest dataset, A* requires multiple days to produce a valid path on the experiment's hardware.
@@ -127,7 +127,7 @@
 		\item \textbf{Scalability Issues:} As problem size increases, even anytime algorithms face challenges in finding near-optimal solutions quickly, highlighting the need for efficient parallelization and hybrid strategies.
 	\end{itemize}
 	
-	Future work could explore hybrid approaches that combine the rapid initial solution of heuristics with the refinement capabilities of local search methods. Additionally, adaptive strategies that dynamically allocate computational resources based on the current solution quality may further enhance performance under varying deadline constraints.
+	Future work could explore hybrid approaches that combine the rapid initial solution of heuristics with the refinement capabilities of local search methods. Alternatively, augmenting existing greedy approaches to improve given additional time would be a good area of research. (This is in effect what most local search algorithms are doing.) Additionally, adaptive strategies that dynamically allocate computational resources based on the current solution quality may further enhance performance under varying deadline constraints.
 	
 	\section{Appendix}
 	Complete source code to reproduce these results are available online at\\

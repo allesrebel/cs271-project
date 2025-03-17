@@ -108,6 +108,14 @@ for solver_cls in solvers:
         for file in files:
             tasks.append((solver_cls, file, tsp_optimal[file], None))
 
+results = collections.defaultdict(list)
+delta_file = 'results_delta.jsonl'
+master_file = 'results.json'
+
+def append_delta(update):
+    with open(delta_file, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(update) + "\n")
+
 def run_solver_task(args):
     solver_cls, file, optimal_value, timelimit = args
     file_path = os.path.join('dataset', file)
@@ -142,15 +150,18 @@ if __name__ == "__main__":
         results_list = pool.map(run_solver_task, tasks)
 
     # Aggregate results in a thread-safe manner in the main process.
-    results = collections.defaultdict(list)
     for file, solver_name, solution, elapsed_time, optimal, timelimit in results_list:
-        results[file].append({
+        update = {
             "solver": solver_name,
             "solution": solution,
             "time": elapsed_time,
             "optimal": optimal,
             "timelimit": timelimit if timelimit else 0
-        })
+        }
+        # Update the in-memory dictionary
+        results[file].append(update)
+        # Append just the new update to the delta file
+        append_delta(update)
 
-    with open('results.json', 'w', encoding='utf-8') as f:
+    with open(master_file, 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=4, sort_keys=True)
