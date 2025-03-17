@@ -146,27 +146,29 @@ def run_solver_task(args):
     return file, solver_cls.__qualname__, solution, elapsed_time, optimal_value, timelimit
 
 if __name__ == "__main__":
+    print("Working Directory:", os.getcwd())
+
     # Spawn only as many processes as there are CPU cores.
     num_processors = multiprocessing.cpu_count()
     # Shuffle Task list to remove bias
     random.shuffle(tasks)
-    with multiprocessing.Pool(processes=num_processors) as pool:
-        results_list = pool.map(run_solver_task, tasks)
+    print(tasks)
 
-    # Aggregate results in a thread-safe manner in the main process.
-    for file, solver_name, solution, elapsed_time, optimal, timelimit in results_list:
-        update = {
-            "file" : file,
-            "solver": solver_name,
-            "solution": solution,
-            "time": elapsed_time,
-            "optimal": optimal,
-            "timelimit": timelimit if timelimit else 0
-        }
-        # Update the in-memory dictionary
-        results[file].append(update)
-        # Append just the new update to the delta file
-        append_delta(update)
+    with multiprocessing.Pool(processes=num_processors) as pool:
+        for result in pool.imap_unordered(run_solver_task, tasks):
+            file, solver_name, solution, elapsed_time, optimal, timelimit = result
+            update = {
+                "file" : file,
+                "solver": solver_name,
+                "solution": solution,
+                "time": elapsed_time,
+                "optimal": optimal,
+                "timelimit": int(timelimit) if timelimit else 0
+            }
+            # Update the in-memory dictionary
+            results[file].append(update)
+            # Append just the new update to the delta file
+            append_delta(update)
 
     with open(master_file, 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=4, sort_keys=True)
