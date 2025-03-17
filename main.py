@@ -112,9 +112,13 @@ results = collections.defaultdict(list)
 delta_file = 'results_delta.jsonl'
 master_file = 'results.json'
 
+# Create a lock for synchronizing file writes
+lock = multiprocessing.Lock()
+
 def append_delta(update):
-    with open(delta_file, 'a', encoding='utf-8') as f:
-        f.write(json.dumps(update) + "\n")
+    with lock:
+        with open(delta_file, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(update) + "\n")
 
 def run_solver_task(args):
     solver_cls, file, optimal_value, timelimit = args
@@ -152,6 +156,7 @@ if __name__ == "__main__":
     # Aggregate results in a thread-safe manner in the main process.
     for file, solver_name, solution, elapsed_time, optimal, timelimit in results_list:
         update = {
+            "file" : file,
             "solver": solver_name,
             "solution": solution,
             "time": elapsed_time,
