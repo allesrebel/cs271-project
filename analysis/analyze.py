@@ -10,20 +10,37 @@ parser.add_argument('input_file', type=str, help='Input JSON file containing sol
 parser.add_argument('--save', action='store_true', help='Save to disk instead of displaying plots')
 args = parser.parse_args()
 
-# Load data from JSON file
-with open(args.input_file, 'r') as f:
-    data = json.load(f)
 
-# Flattening data into DataFrame
-data_rows = []
-for filename, results in data.items():
-    for result in results:
-        solver = result['solver']
-        cost = result['solution']['cost']
-        optimal = result['optimal']
-        time_taken = result['time']
-        time_limit = result['timelimit']
-        # Avoid division by zero by checking if cost is not zero
+# Load data from delta file (not complete JSON)
+def load_json_lines(file_path):
+    data = []
+    with open(file_path, 'r') as f:
+        for line in f:
+            # Strip whitespace and ignore empty lines
+            line = line.strip()
+            if line:
+                record = json.loads(line)
+                data.append(record)
+    return data
+
+if 'jsonl' in args.input_file:
+    # Load data from the file
+    json_data = load_json_lines(args.input_file)
+    
+    # Create DataFrame; columns will be the keys from the JSON objects
+    data = pd.DataFrame(json_data)
+
+    # Flattening the data: Compute accuracy using optimal/cost (from the nested 'solution' dict)
+    data_rows = []
+    for index, row in data.iterrows():
+        filename = row['file']
+        solver = row['solver']
+        # Extract the 'cost' from the nested solution dictionary
+        cost = row['solution']['cost']
+        optimal = row['optimal']
+        time_taken = row['time']
+        time_limit = row['timelimit']
+        # Avoid division by zero; if cost is zero, set accuracy to NaN
         accuracy = optimal / cost if cost != 0 else np.nan
 
         data_rows.append({
@@ -33,12 +50,36 @@ for filename, results in data.items():
             'Time': time_taken,
             'Timelimit': time_limit
         })
+else:
+    # Load data from JSON file
+    with open(args.input_file, 'r') as f:
+        data = json.load(f)
+
+    # Flattening data into DataFrame
+    data_rows = []
+    for filename, results in data.items():
+        for result in results:
+            solver = result['solver']
+            cost = result['solution']['cost']
+            optimal = result['optimal']
+            time_taken = result['time']
+            time_limit = result['timelimit']
+            # Avoid division by zero by checking if cost is not zero
+            accuracy = optimal / cost if cost != 0 else np.nan
+
+            data_rows.append({
+                'File': filename,
+                'Solver': solver,
+                'Accuracy': accuracy,
+                'Time': time_taken,
+                'Timelimit': time_limit
+            })
 
 # Create DataFrame
 df = pd.DataFrame(data_rows)
 
 # Define the time limits you want to consider
-time_limits = [1, 60, 120, 300, 0]
+time_limits = [1, 60, 120, 300]
 
 
 for t in time_limits:
