@@ -78,9 +78,12 @@ else:
 # Create DataFrame
 df = pd.DataFrame(data_rows)
 
-# Define the time limits you want to consider
-time_limits = [1, 60, 120, 300]
-
+# Define the time limits you want to consider (using interesting points)
+values = np.linspace(1, 300, num=50)
+values_int = np.rint(values).astype(int)
+closest_to_60 = values_int[np.abs(values_int - 60).argmin()]
+closest_to_120 = values_int[np.abs(values_int - 120).argmin()]
+time_limits = [1, closest_to_60, closest_to_120, 300]
 
 for t in time_limits:
     # Filter the DataFrame by the current time limit (note the column is 'timelimit' in your JSON)
@@ -97,16 +100,10 @@ for t in time_limits:
     pivot_mean = solver_accuracy_stats.pivot(index='File', columns='Solver', values='mean')
     pivot_std = solver_accuracy_stats.pivot(index='File', columns='Solver', values='std')
 
-    # Print the underlying accuracy datapoints used for each File and Solver group
-    print(f"\nData points for Accuracy per File by Solver for time limit {t} sec:")
-    for (file, solver), group in df_t.groupby(['File', 'Solver']):
-        print(f"  File: {file}, Solver: {solver}, Accuracies: {group['Accuracy'].tolist()}")
-
-
     ax = pivot_mean.plot(kind='bar', figsize=(10, 6), yerr=pivot_std, capsize=4)
     ax.set_title(f'Normalized Accuracy per Dataset by Solver - {t}s Limit')
     ax.set_ylabel('Accuracy (Optimal / Solver Cost)')
-    ax.set_xlabel('Dataset (increasing numer of cities)')
+    ax.set_xlabel('Dataset')
     ax.legend(title='Solver')
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -146,7 +143,7 @@ for t in time_limits:
     ax = pivot_mean_time.plot(kind='bar', figsize=(10, 6), yerr=pivot_std_time, capsize=4)
     ax.set_title(f'Execution Time per File by Solver - {t}s Limit')
     ax.set_ylabel('Time (seconds)')
-    ax.set_xlabel('Dataset (increasing numer of cities)')
+    ax.set_xlabel('Dataset')
     ax.legend(title='Solver')
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -163,6 +160,9 @@ for t in time_limits:
 for dataset in df['File'].unique():
     df_dataset = df[df['File'] == dataset]
     
+    # Filter out rows where Timelimit is 0, indicating infinite time
+    df_dataset = df_dataset[df_dataset['Timelimit'] >= 1]
+
     if df_dataset.empty:
         print(f"No data found for dataset {dataset}.")
         continue
@@ -189,10 +189,63 @@ for dataset in df['File'].unique():
     ax.set_title(f'Normalized Solver Accuracy vs Time Control for Dataset: {dataset}')
     ax.legend(title='Solver')
     ax.grid(True)
+    plt.xticks(rotation=45)
     plt.tight_layout()
     
     if args.save:
         plt.savefig(f'accuracy_line_{dataset}.png', bbox_inches='tight')
+        plt.close()
+    else:
+        plt.show()
+
+# ----------------------------
+# Plot 5: Normalized Accuracy for solver, unbound
+# ----------------------------
+#Filter the DataFrame for rows where the time limit is exactly 0 (unlimited time)
+df_time0 = df[df['Timelimit'] == 0]
+
+# Loop over each dataset in the filtered DataFrame
+for dataset in df_time0['File'].unique():
+    df_dataset = df_time0[df_time0['File'] == dataset]
+    
+    if df_dataset.empty:
+        print(f"No data found for dataset {dataset} at time 0.")
+        continue
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    # Get the unique solvers for the current dataset
+    solvers = df_dataset['Solver'].unique()
+    
+    accuracies = []
+    stds = []
+    
+    # For each solver, calculate the mean accuracy and its standard deviation
+    for solver in solvers:
+        df_solver = df_dataset[df_dataset['Solver'] == solver]
+        mean_accuracy = df_solver['Accuracy'].mean()
+        std_accuracy = df_solver['Accuracy'].std()  # if only one value exists, this will be NaN
+        accuracies.append(mean_accuracy)
+        # Replace NaN with 0 for plotting purposes
+        stds.append(std_accuracy if not np.isnan(std_accuracy) else 0)
+    
+    # Create x positions for each solver
+    x = np.arange(len(solvers))
+    
+    # Plot a bar chart with error bars
+    ax.bar(x, accuracies, yerr=stds, align='center', alpha=0.7, capsize=10)
+    ax.set_xticks(x)
+    ax.set_xticklabels(solvers)
+    
+    ax.set_xlabel('Solver')
+    ax.set_ylabel('Accuracy (Optimal / Solver Cost)')
+    ax.set_title(f'Normalized Solver Accuracy at Time 0 for Dataset: {dataset}')
+    ax.grid(True, axis='y')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    
+    if args.save:
+        plt.savefig(f'accuracy_bar_time0_{dataset}.png', bbox_inches='tight')
         plt.close()
     else:
         plt.show()
