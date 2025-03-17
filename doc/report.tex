@@ -16,14 +16,14 @@
 	\maketitle
 	
 	\begin{abstract}
-		This report presents a comprehensive survey of several algorithms applied to the well-known Traveling Salesman Problem (TSP) with a focus on deadline constraints. We compare heuristic, graph-based, and local search methodologies, and analyze their performance under various time restrictions (1 second, 1 minute, 2 minutes, 5 minutes, unlimited) using datasets from TSPLIB95. Particular attention is given to whether each method improves incrementally with additional time or requires a complete, node-by-node construction to yield a valid solution.
+		This report presents a comprehensive survey of several algorithms applied to the well-known Traveling Salesman Problem (TSP) with a focus on deadline constraints. We compare heuristic based and local search based methodologies, and analyze their performance under various time restrictions using datasets from TSPLIB95. Particular attention is given to whether each method improves incrementally with additional time or requires a complete, node-by-node construction to yield a valid solution. We propose a framework to convert complete exploration algorithm to an all time algorithm suitable for use with time constraints.
 	\end{abstract}
 	
 	\section{Introduction}
-	The Traveling Salesman Problem (TSP) is a classical optimization problem in which a salesman must visit a set of cities exactly once and return to the origin city while minimizing the total travel cost. Due to its NP-hard nature, numerous approaches have been proposed over the years, ranging from simple heuristics to complex algorithms. In real-world applications, time constraints (or deadlines) are common, and these algorithms must deliver good solutions within limited computational time. This report surveys several algorithms with the goal of understanding which techniques are best suited when runtime is a critical factor, and how solution quality is affected by additional computational time.
+	The Traveling Salesman Problem (TSP) is a classical optimization problem in which a salesman must visit a set of cities exactly once and return to the origin city while minimizing the total travel cost. Due to its \textbf{NP-hard} nature, numerous approaches have been proposed over the years, ranging from simple heuristics to complex stochastic algorithms. In real-world applications, time constraints (or deadlines) are common, and these algorithms must deliver good solutions within limited computational time. This report surveys several algorithms and proposes an augmentation with the goal of understanding which techniques are best suited when runtime is a critical factor, and how solution quality is affected by additional computational time across data space exploration.
 	
 	\section{Problem Definition}
-	Given a set of $n$ cities and a cost function (distance matrix) between each pair of cities, the objective is to determine a permutation of the cities that minimizes the total tour cost. The dataset used for our experiments is taken from \texttt{https://people.sc.fsu.edu/~jburkardt/datasets/tsp/tsp.html}, which provides TSPLIB95-compatible data along with known optimal solutions.
+	Given a set of $n$ cities and a cost function (distance matrix) between each pair of cities, the objective is to determine a permutation of the cities that minimizes the total tour cost. The dataset used for our experiments is taken from \texttt{https://people.sc.fsu.edu/~jburkardt/datasets/tsp/tsp.html}\cite{Dataset}, which provides TSPLIB95-compatible\cite{TSPLIB} data along with known optimal solutions.
 	
 	\section{Dataset Details}
 	The experimental datasets are TSPLIB95 instances obtained from \url{https://people.sc.fsu.edu/~jburkardt/datasets/tsp/tsp.html}. Each file contains the following elements:
@@ -35,7 +35,6 @@
 	\end{itemize}
 	
 	The dataset files used in our experiments are as follows. Note that the number in each file name generally indicates the number of cities in that instance:
-
 	
 	\begin{table}[H]
 		\centering
@@ -63,24 +62,25 @@
 	\subsubsection{Simple Minimum Distance}
 	The \textbf{Minimum Distance} heuristic (or greedy algorithm) selects the nearest unvisited city at each step. This greedy approach produces a complete solution almost instantly; however, it does not refine its solution iteratively. In other words, providing additional time beyond the initial solution does not improve the outcome. The simplicity of this algorithm is attractive for extremely tight deadlines, though the resulting tour is typically suboptimal compared to more sophisticated methods.
 	
-	\subsubsection{Graph Based A* Search + Augmentation for Time Constraints}
-	A* search is a well-known graph traversal and pathfinding algorithm that employs a heuristic function to estimate the cost from the current node to the goal. For TSP, a minimum spanning tree (MST) of the remaining nodes—to guide the search is used as the heuristic. Although A* can theoretically be interrupted to provide a partial solution, it is generally not considered an anytime algorithm because a valid, fully optimal solution is only available after the complete search has been conducted. 
-	In this work, we improve it's performance with time constraints; the best partial solution is completed using Simple Minimum Distance heuristic to produce a valid tour from the best solution discovered.
+	\subsubsection{Graph Based A* Search + Augmentation}
+	A* search is a well-known graph traversal and pathfinding algorithm \cite{4082128} that employs a heuristic function to estimate the cost from the current node to the goal. For TSP, a minimum spanning tree (MST) of the remaining nodes—to guide the search is used as the heuristic. Although A* can theoretically be interrupted to provide a partial solution, it is generally not considered an any time algorithm because a valid, fully optimal solution is only available after the complete search has been conducted. 
+	
+	In this work, we improve the original algorithm's performance with time constraints; the best partial solution computed is completed using Simple Minimum Distance heuristic to produce a valid tour from the best solution discovered. This allows the traditional A* algorithm to function as an any time algorithm.
 	
 	\subsubsection{Tree Based Branch and Bound with MST}
-	The \textbf{Branch and Bound} method systematically enumerates candidate tours and prunes paths where the lower bound—often derived from the MST cost of the remaining nodes—exceeds the current best solution. Like A*, this method constructs the solution node by node and only provides a complete solution once the search is finished. Consequently, even if more time is allocated, improvements are only realized after the algorithm completes the necessary exploration, making it less adaptable to incremental deadline constraints.
+	The \textbf{Branch and Bound} method\cite{MORRISON201679} systematically enumerates candidate tours and prunes paths where the lower bound—often derived from the MST cost of the remaining nodes—exceeds the current best solution. Like A*, this method constructs the solution node by node and only provides a complete solution once the search is finished. Consequently, even if more time is allocated, improvements are only realized after the algorithm completes the necessary exploration, making it less adaptable to incremental deadline constraints.
 
 	\subsection{Local Search-Based Approaches}
 	Local search algorithms are iterative methods that start from an initial solution and improve it by exploring the neighborhood of that solution. In this context, the "neighborhood" consists of solutions that are reachable by making small modifications (e.g., swapping two cities in the tour). These methods are categorized as anytime algorithms since they always yield a valid solution and can progressively enhance solution quality as more computation time is provided. However, a common challenge for local search is the risk of getting trapped in local optima, where no small change results in an improvement. To mitigate this, techniques such as random restarts, perturbation, or other inspired enhancements (e.g., simulated annealing or genetic operators) are often incorporated.
 	
 	\subsubsection{Standard Local Search}
-	Standard local search iteratively improves a candidate solution by exploring its neighborhood. Conceptually simple, while exploring the neighborhood, the algorithm simply notes improvements and chooses the best improvement, which may result in getting stuck in a local minima. In contrast to the next few methods which deal with local minima by introducing randomness into this selection process. Given enough time, the algorithm can progressively escape shallow local minima. Note, this algorithm does not require any hyper parameters.
+	Standard local search iteratively improves a candidate solution by exploring its neighborhood. The variant implemented for this work is known as $2-opt$ Local Search, applied to the Generalized Traveling Salesman problem \cite{DIMITRIJEVIC1997105}. Conceptually simple, while exploring the neighborhood, the algorithm simply notes improvements and chooses the best improvement, which may result in getting stuck in a local minima. In contrast to the next few methods which deal with local minima by introducing randomness into this selection process. Given enough time, the algorithm can progressively escape shallow local minima. Note, this algorithm does not require any hyper parameters.
 	
 	\subsubsection{Genetic Algorithm}
-	Genetic Algorithms (GAs) are population-based sampling of the solution space that simulate the process of natural evolution. They involve selection, crossover, and mutation operators to evolve a set of candidate solutions over multiple generations. GAs are naturally anytime algorithms; they always maintain a population of complete solutions that improve as more computational time is allocated. However, the quality of improvements depends on proper parameter tuning (e.g., crossover and mutation rates) and the convergence characteristics of the population.
+	Genetic Algorithms (GAs) are population-based sampling of the solution space that simulate the process of natural evolution. They involve selection, crossover, and mutation operators to evolve a set of candidate solutions over multiple generations\cite{wikipedia_genetic_algorithm}. GAs are naturally anytime algorithms; they always maintain a population of complete solutions that improve as more computational time is allocated. However, the quality of improvements depends on proper parameter tuning (e.g., crossover and mutation rates) and the convergence characteristics of the population.
 	
 	\subsubsection{Simulated Annealing}
-	Simulated Annealing (SA) employs a probabilistic acceptance criterion that allows for occasional uphill moves to escape local optima. SA starts with a complete solution and gradually improves it by accepting changes based on a cooling schedule. As an anytime algorithm, SA always provides a valid solution, with quality generally improving with more iterations—up to the point where the temperature becomes too low to allow further meaningful changes.
+	Simulated Annealing (SA) employs a probabilistic acceptance criterion that allows for occasional uphill moves to escape local optima\cite{wikipedia_simulated_annealing}. SA starts with a complete solution and gradually improves it by accepting changes based on a cooling schedule. To avoid local minima, lower scoring or uphill neighbors are sometimes kept depending on the temperature. This selection of lower scoring neighbors is significantly reduced as the temperature drops or is cooled down. As an anytime algorithm, SA always provides a valid solution, with quality generally improving with more iterations—up to the point where the temperature becomes too low to allow further meaningful changes.
 	
 	\section{Experimental Setup}
 	The experimental setup involves running each solver on a desktop computer equipped with a multi-threaded processor. Each algorithm is implemented as a separate thread, ensuring that all solvers work with the same dataset and starting position. Experiments were conducted on the five TSPLIB95 instances listed in Table~\ref{table:tsplib}. For each dataset, various deadlines were imposed, ranging from a second to minutes. And each individual time control or deadline, was run multiple times to collect a statistical distribution. This helps control variation in performance due to randomness inherent in a operating system's scheduling or caching. To further insure additional bias was avoided, each trial configuration was shuffled prior to assignment to random thread. Threads were limited to number of threads the processor architecture supported.
@@ -89,9 +89,7 @@
 	\section{Results and Discussion}
 	The experimental findings reveal significant differences in algorithm performance and their sensitivity to additional computational time:
 	
-	\subsection{Heuristic-Based Methods}
-	
-	
+	\subsection{Heuristic-Based Methods}	
 	\subsubsection{Simple Heuristic, Minimum Distance}
 	The Minimum Distance heuristic provided solutions rapidly. However, due to its non-iterative nature, more runtime does not enhance the solution quality. Its performance remains static regardless of additional time beyond initial solution generation. To make this a bit more Competitive, random starting locations were implemented. However, the earlier limitation still applies; upon completion of a solution, additional time does not improve solution quality.
 	
@@ -117,6 +115,9 @@
 	\subsection{Overall Observations}
 	The experiments confirm that anytime algorithms—those that always return a valid solution and gradually improve it (e.g., Local Search, Genetic Algorithm, and Simulated Annealing)—are more robust under deadline constraints. In contrast, algorithms like A* and Branch and Bound require complete execution to yield their optimal solutions and are less effective when limited by time.
 	
+	\subsection{Related work}
+	Other authors demonstrate improvements applied to local search style algorithms, targeting better selection strategies \cite{8367362}\cite{6492788}. This work focuses primarily on deadline impact to accuracy for a range of algorithms. In addition we propose an enhancement to a traditionally inapplicable algorithm for TSP due to exponential growth of the problem space.
+	
 	\section{Conclusions and Future Work}
 	This survey examined several approaches to the TSP under deadline constraints, focusing on how solution quality is affected by available computation time. Key conclusions include:
 	\begin{itemize}[noitemsep]
@@ -128,11 +129,12 @@
 	
 	Future work could explore hybrid approaches that combine the rapid initial solution of heuristics with the refinement capabilities of local search methods. Additionally, adaptive strategies that dynamically allocate computational resources based on the current solution quality may further enhance performance under varying deadline constraints.
 	
-	\begin{thebibliography}{9}
-		\bibitem{TSPLIB}
-		Reinelt, G. (1991). TSPLIB—A Traveling Salesman Problem Library. \emph{ORSA Journal on Computing}, 3(4), 376--384.
-		\bibitem{Dataset}
-		Burkardt, J. (n.d.). TSP Datasets. Retrieved from \url{https://people.sc.fsu.edu/~jburkardt/datasets/tsp/tsp.html}
-	\end{thebibliography}
+	\section{Appendix}
+	Complete source code to reproduce these results are available online at\\
+	 \texttt{https://github.com/allesrebel/cs271-project}\cite{allesrebel_cs271project}.
+	
+	% Auto generates References Section
+	\bibliographystyle{ieeetr}
+	\bibliography{references.bib}
 	
 \end{document}
